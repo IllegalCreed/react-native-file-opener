@@ -44,23 +44,21 @@ public class FileOpener extends ReactContextBaseJavaModule {
   @ReactMethod
   public void open(String fileArg, String contentType, Promise promise) throws JSONException {
   		File file = new File(fileArg);
-
-  		if (file.exists()) {
-  			try {
-          Uri path = FileProvider.getUriForFile(getReactApplicationContext(), getReactApplicationContext().getPackageName() + ".fileprovider", file);
-  				Intent intent = new Intent(Intent.ACTION_VIEW);
-  				intent.setDataAndType(path, contentType);
-          intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-          intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-  				getReactApplicationContext().startActivity(intent);
-
-                promise.resolve("Open success!!");
-  			} catch (android.content.ActivityNotFoundException e) {
-                promise.reject("Open error!!");
-  			}
-  		} else {
-            promise.reject("File not found");
-  		}
+      if (file.exists()) {
+        try{
+          Intent intent = new Intent(Intent.ACTION_VIEW);
+          Uri data = Uri.fromFile(file);    //路径不能写成："file:///storage/sdcard0/···"
+          intent.setDataAndType(data, contentType);  //Type的字符串为固定内容
+          intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+          intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+          getReactApplicationContext().startActivity(intent);
+          promise.resolve("Open success!!");
+        }
+        catch (android.content.ActivityNotFoundException e) {
+          promise.reject("Open error!!");
+        }
+      } else {
+        promise.reject("File not found");
+      }
   	}
-
 }
